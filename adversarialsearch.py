@@ -1,3 +1,4 @@
+import math
 from typing import Callable
 
 from adversarialsearchproblem import (
@@ -11,14 +12,46 @@ def minimax(asp: AdversarialSearchProblem[GameState, Action]) -> Action:
     """
     Implement the minimax algorithm on ASPs, assuming that the given game is
     both 2-player and constant-sum.
-
     Input:
         asp - an AdversarialSearchProblem
     Output:
         an action (an element of asp.get_available_actions(asp.get_start_state()))
     """
-    ...
+    player = asp.get_start_state().player_to_move()
+    print("CURRENT MAXIMUM: ", maxValue(asp, asp.get_start_state(), player))
+    bestActionIndex = 0
+    bestActionEvaluation = -math.inf
+    actionList = list(asp.get_available_actions(asp.get_start_state()))
+    for action in actionList:
+        successorState = asp.transition(asp.get_start_state(), action)
+        successorEvaluation = maxValue(asp, successorState, player)
+        if (successorEvaluation > bestActionEvaluation):
+            bestActionEvaluation = successorEvaluation
+            bestActionIndex = actionList.index(action)
+    return actionList[bestActionIndex]
 
+
+def maxValue(asp: AdversarialSearchProblem, state, player):
+    if (asp.is_terminal_state(state) == True):
+        return asp.evaluate_terminal(state)[player]
+    else:
+        currentMax = -math.inf
+        for action in asp.get_available_actions(state):
+            successorState = asp.transition(state, action)
+            currentEvaluation = minValue(asp, successorState, player)
+            currentMax = max(currentMax, currentEvaluation)
+        return currentMax
+
+def minValue(asp: AdversarialSearchProblem, state, player):
+    if (asp.is_terminal_state(state) == True):
+        return asp.evaluate_terminal(state)[player]
+    else:
+        currentMin = math.inf
+        for action in asp.get_available_actions(state):
+            successorState = asp.transition(state, action)
+            currentEvaluation = maxValue(asp, successorState, player)
+            currentMin = min(currentMin, currentEvaluation)
+        return currentMin
 
 def alpha_beta(asp: AdversarialSearchProblem[GameState, Action]) -> Action:
     """
