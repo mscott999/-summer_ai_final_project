@@ -18,7 +18,6 @@ def minimax(asp: AdversarialSearchProblem[GameState, Action]) -> Action:
         an action (an element of asp.get_available_actions(asp.get_start_state()))
     """
     player = asp.get_start_state().player_to_move()
-    print("CURRENT MAXIMUM: ", maxValue(asp, asp.get_start_state(), player))
     bestActionIndex = 0
     bestActionEvaluation = -math.inf
     actionList = list(asp.get_available_actions(asp.get_start_state()))
@@ -29,7 +28,6 @@ def minimax(asp: AdversarialSearchProblem[GameState, Action]) -> Action:
             bestActionEvaluation = successorEvaluation
             bestActionIndex = actionList.index(action)
     return actionList[bestActionIndex]
-
 
 def maxValue(asp: AdversarialSearchProblem, state, player):
     if (asp.is_terminal_state(state) == True):
@@ -63,8 +61,47 @@ def alpha_beta(asp: AdversarialSearchProblem[GameState, Action]) -> Action:
     Output:
         an action(an element of asp.get_available_actions(asp.get_start_state()))
     """
-    ...
+    player = asp.get_start_state().player_to_move()
+    bestActionIndex = 0
+    bestActionEvaluation = -math.inf
+    actionList = list(asp.get_available_actions(asp.get_start_state()))
+    for action in actionList:
+        successorState = asp.transition(asp.get_start_state(), action)
+        alpha = -math.inf
+        beta = math.inf
+        successorEvaluation = maxValueAB(asp, alpha, beta, successorState, player)
+        if (successorEvaluation > bestActionEvaluation):
+            bestActionEvaluation = successorEvaluation
+            bestActionIndex = actionList.index(action)
+    return actionList[bestActionIndex]
 
+def maxValueAB(asp: AdversarialSearchProblem, alpha, beta, state, player):
+    if (asp.is_terminal_state(state) == True):
+        return asp.evaluate_terminal(state)[player]
+    else:
+        currentMax = -math.inf
+        for action in asp.get_available_actions(state):
+            successorState = asp.transition(state, action)
+            currentEvaluation = minValueAB(asp, alpha, beta, successorState, player)
+            currentMax = max(currentMax, currentEvaluation)
+            alpha = max(alpha, currentEvaluation)
+            if (beta <= alpha):
+                break
+        return currentMax
+
+def minValueAB(asp: AdversarialSearchProblem, alpha, beta, state, player):
+    if (asp.is_terminal_state(state) == True):
+        return asp.evaluate_terminal(state)[player]
+    else:
+        currentMin = math.inf
+        for action in asp.get_available_actions(state):
+            successorState = asp.transition(state, action)
+            currentEvaluation = maxValueAB(asp, alpha, beta, successorState, player)
+            currentMin = min(currentMin, currentEvaluation)
+            beta = min(beta, currentEvaluation)
+            if (beta <= alpha):
+                break
+        return currentMin
 
 def alpha_beta_cutoff(
     asp: AdversarialSearchProblem[GameState, Action],
