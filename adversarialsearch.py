@@ -1,22 +1,12 @@
 import math
 from typing import Callable
-
 from adversarialsearchproblem import (
     Action,
     AdversarialSearchProblem,
     State as GameState,
 )
 
-
 def minimax(asp: AdversarialSearchProblem[GameState, Action]) -> Action:
-    """
-    Implement the minimax algorithm on ASPs, assuming that the given game is
-    both 2-player and constant-sum.
-    Input:
-        asp - an AdversarialSearchProblem
-    Output:
-        an action (an element of asp.get_available_actions(asp.get_start_state()))
-    """
     player = asp.get_start_state().player_to_move()
     bestActionIndex = 0
     bestActionEvaluation = -math.inf
@@ -52,15 +42,6 @@ def minValue(asp: AdversarialSearchProblem, state, player):
         return currentMin
 
 def alpha_beta(asp: AdversarialSearchProblem[GameState, Action]) -> Action:
-    """
-    Implement the alpha-beta pruning algorithm on ASPs,
-    assuming that the given game is both 2-player and constant-sum.
-
-    Input:
-        asp - an AdversarialSearchProblem
-    Output:
-        an action(an element of asp.get_available_actions(asp.get_start_state()))
-    """
     player = asp.get_start_state().player_to_move()
     bestActionIndex = 0
     bestActionEvaluation = -math.inf
