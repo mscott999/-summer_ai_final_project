@@ -84,35 +84,50 @@ def minValueAB(asp: AdversarialSearchProblem, alpha, beta, state, player):
                 break
         return currentMin
 
-def alpha_beta_cutoff(
-    asp: AdversarialSearchProblem[GameState, Action],
-    cutoff_ply: int,
-    # See AdversarialSearchProblem:heuristic_func
-    heuristic_func: Callable[[GameState], float],
-) -> Action:
-    """
-    This function should:
-    - search through the asp using alpha-beta pruning
-    - cut off the search after cutoff_ply moves have been made.
+def alpha_beta_cutoff(asp: AdversarialSearchProblem[GameState, Action], cutoff_ply: int, heuristic_func: Callable[[GameState], float]) -> Action:
+    player = asp.get_start_state().player_to_move()
+    bestActionIndex = 0
+    bestActionEvaluation = -math.inf
+    actionList = list(asp.get_available_actions(asp.get_start_state()))
+    for action in actionList:
+        successorState = asp.transition(asp.get_start_state(), action)
+        alpha = -math.inf
+        beta = math.inf
+        successorEvaluation = maxValueABC(asp, alpha, beta, cutoff_ply, successorState, player)
+        if (successorEvaluation > bestActionEvaluation):
+            bestActionEvaluation = successorEvaluation
+            bestActionIndex = actionList.index(action)
+    return actionList[bestActionIndex]
+    
 
-    Input:
-        asp - an AdversarialSearchProblem
-        cutoff_ply - an Integer that determines when to cutoff the search and
-            use heuristic_func. For example, when cutoff_ply = 1, use
-            heuristic_func to evaluate states that result from your first move.
-            When cutoff_ply = 2, use heuristic_func to evaluate states that
-            result from your opponent's first move. When cutoff_ply = 3 use
-            heuristic_func to evaluate the states that result from your second
-            move. You may assume that cutoff_ply > 0.
-        heuristic_func - a function that takes in a GameState and outputs a
-            real number indicating how good that state is for the player who is
-            using alpha_beta_cutoff to choose their action. You do not need to
-            implement this function, as it should be provided by whomever is
-            calling alpha_beta_cutoff, however you are welcome to write
-            evaluation functions to test your implemention. The heuristic_func
-            we provide does not handle terminal states, so evaluate terminal
-            states the same way you evaluated them in the previous algorithms.
-    Output:
-        an action(an element of asp.get_available_actions(asp.get_start_state()))
-    """
-    ...
+def maxValueABC(asp: AdversarialSearchProblem, alpha, beta, cutoff, state, player):
+    if (asp.is_terminal_state(state) == True):
+        return asp.evaluate_terminal(state)[player]
+    elif (cutoff == 0):
+        return asp.heuristic_func(state, player)
+    else:
+        currentMax = -math.inf
+        for action in asp.get_available_actions(state):
+            successorState = asp.transition(state, action)
+            currentEvaluation = minValueABC(asp, alpha, beta, cutoff - 1, successorState, player)
+            currentMax = max(currentMax, currentEvaluation)
+            alpha = max(alpha, currentEvaluation)
+            if (beta <= alpha):
+                break
+        return currentMax
+
+def minValueABC(asp: AdversarialSearchProblem, alpha, beta, cutoff, state, player):
+    if (asp.is_terminal_state(state) == True):
+        return asp.evaluate_terminal(state)[player]
+    elif (cutoff == 0):
+        return asp.heuristic_func(state, player)
+    else:
+        currentMin = math.inf
+        for action in asp.get_available_actions(state):
+            successorState = asp.transition(state, action)
+            currentEvaluation = maxValueABC(asp, alpha, beta, cutoff - 1, successorState, player)
+            currentMin = min(currentMin, currentEvaluation)
+            beta = min(beta, currentEvaluation)
+            if (beta <= alpha):
+                break
+        return currentMin
